@@ -3,7 +3,6 @@ rm(list=ls())
 ###########################################################################################################################
 ###### AIM: prepare data for both health status analyses and correction of attrition 
 ##########################################################################################################################
-
 ##marital status and education 1st mention
 library(foreign)
 #library(nnet)
@@ -108,7 +107,7 @@ demo <- read.dta(file=paste("sharew",i,"_rel7-1-0_dn.dta", sep=""), convert.fact
 housing <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_housing.dta", sep=""), convert.factors = FALSE)
 
 health <-wavesr %>%
-              select(mergeid,ph006d1:ph006d14) %>%
+              select(mergeid,starts_with("ph006d")) %>%
   mutate(wave1=i) %>%
   left_join(housing %>%
               select(mergeid,nuts1_2003)) %>%
@@ -124,7 +123,34 @@ write.table(health, file=paste("wave",i,".csv", sep=""), sep=",")
 dev.off()
 rm(list=ls())
 
-library(foreign)
+i=1
+setwd(paste("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\SHARE_",i,sep=""))
+wavesr <- read.dta(file=paste("sharew",i,"_rel7-1-0_ph.dta", sep=""), convert.factors = FALSE)
+weightsd <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_weights.dta", sep=""), convert.factors = FALSE)
+demo <- read.dta(file=paste("sharew",i,"_rel7-1-0_dn.dta", sep=""), convert.factors = FALSE)
+housing <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_housing.dta", sep=""), convert.factors = FALSE)
+
+
+health <-wavesr %>%
+  select(mergeid,starts_with("ph006d")) %>%
+  mutate(wave1=i) %>%
+  left_join(housing %>%
+              select(mergeid,nuts1_2003)) %>%
+  left_join(weightsd %>%
+              select(mergeid,dw_w1)) %>%
+  rename("merg"="mergeid","NUTS1"="nuts1_2003", "weight1"="dw_w1") %>%
+  filter(!is.na(weight1)) %>%
+  mutate(chr1=ph006d1+ph006d2+ph006d3+ph006d4+ph006d5+ph006d6+ph006d8+ph006d10+ph006d12,
+         chr1=ifelse(chr1>0,1,chr1)) %>%
+  select(-starts_with("ph006d"))
+
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
+write.table(health, file=paste("wave",i,".csv", sep=""), sep=",")
+##########################################################################
+######################################
+dev.off()
+rm(list=ls())
+
 i=2
 setwd(paste("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\SHARE_",i,sep=""))
 wavesr <- read.dta(file=paste("sharew",i,"_rel7-1-0_ph.dta", sep=""), convert.factors = FALSE)
@@ -134,193 +160,152 @@ housing <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_housing.dta", sep=""), c
 
 
 health <-wavesr %>%
-  select(mergeid,ph006d1:ph006d14) %>%
-  mutate(wave1=i) %>%
-  left_join(housing %>%
-              select(mergeid,nuts1_2003)) %>%
-  left_join(weightsd %>%
-              select(mergeid,dw_w2)) %>%
-  rename("merg"="mergeid","NUTS1"="nuts1_2003", "weight2"="dw_w2") %>%
-  filter(!is.na(weight2)) 
-
-
-health <- wave %>%
-  select(mergeid,chronicw2,sphus) %>%
-  left_join(wavesr %>%
-              select(mergeid,ph005_)) %>%
+  select(mergeid,starts_with("ph006d")) %>%
   mutate(wave2=i) %>%
   left_join(housing %>%
               select(mergeid,nuts1_2003)) %>%
   left_join(weightsd %>%
               select(mergeid,dw_w2)) %>%
-  left_join(weightslong2 %>% 
-              select(mergeid,cliw_c)) %>%
-  rename("merg"="mergeid","chr2"="chronicw2", 
-         "sr2"="sphus", "GALI2"="ph005_",
-         "NUTS1"="nuts1_2003", "weight2"="dw_w2", "wlong2"="cliw_c") %>%
-  filter(!is.na(weight2))
+  rename("merg"="mergeid","NUTS1"="nuts1_2003", "weight2"="dw_w2") %>%
+  filter(!is.na(weight2))%>%
+  mutate(chr2=ph006d1+ph006d2+ph006d3+ph006d4+ph006d5+ph006d6+ph006d8+ph006d10+ph006d12+ph006d16,
+         chr2=ifelse(chr2>0,1,chr2)) %>%
+  select(-starts_with("ph006d"))
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\basic")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 write.table(health, file=paste("wave",i,".csv", sep=""), sep=",")
-
 ##########################################################################
 dev.off()
 rm(list=ls())
 
-library(foreign)
 i=4
 setwd(paste("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\SHARE_",i,sep=""))
-wave <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_health.dta", sep=""), convert.factors = FALSE)
 wavesr <- read.dta(file=paste("sharew",i,"_rel7-1-0_ph.dta", sep=""), convert.factors = FALSE)
 weightsd <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_weights.dta", sep=""), convert.factors = FALSE)
 demo <- read.dta(file=paste("sharew",i,"_rel7-1-0_dn.dta", sep=""), convert.factors = FALSE)
 housing <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_housing.dta", sep=""), convert.factors = FALSE)
 
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\longweights")
-weightslong <-  read.dta(file=paste("w",i,"w",i+1,".dta", sep=""), convert.factors = FALSE)
-
-
-
-health <- wave %>%
-  select(mergeid,chronicw4,sphus) %>%
-  left_join(wavesr %>%
-              select(mergeid,ph005_)) %>%
+health <-wavesr %>%
+  select(mergeid,starts_with("ph006d")) %>%
   mutate(wave4=i) %>%
   left_join(housing %>%
               select(mergeid,nuts1_2010)) %>%
   left_join(weightsd %>%
               select(mergeid,dw_w4)) %>%
-  left_join(weightslong %>% 
-              select(mergeid,cliw_e)) %>%
-  rename("merg"="mergeid","chr4"="chronicw4", 
-         "sr4"="sphus", "GALI4"="ph005_",
-         "NUTS1"="nuts1_2010", "weight4"="dw_w4","wlong4"="cliw_e") %>%
-  filter(!is.na(weight4))
+  rename("merg"="mergeid","NUTS1"="nuts1_2010", "weight4"="dw_w4") %>%
+  filter(!is.na(weight4)) %>%
+  mutate(chr4=ph006d1+ph006d2+ph006d3+ph006d4+ph006d5+ph006d6+ph006d8+ph006d10+ph006d12+ph006d16,
+         chr4=ifelse(chr4>0,1,chr4)) %>%
+  select(-starts_with("ph006d"))
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\basic")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 write.table(health, file=paste("wave",i,".csv", sep=""), sep=",")
 
 ##########################################################################
 dev.off()
 rm(list=ls())
-library(foreign)
 
 i=5
 setwd(paste("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\SHARE_",i,sep=""))
-wave <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_health.dta", sep=""), convert.factors = FALSE)
 wavesr <- read.dta(file=paste("sharew",i,"_rel7-1-0_ph.dta", sep=""), convert.factors = FALSE)
 weightsd <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_weights.dta", sep=""), convert.factors = FALSE)
 housing <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_housing.dta", sep=""), convert.factors = FALSE)
 
-
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\longweights")
-weightslong <-  read.dta(file=paste("w",i,"w",i+1,".dta", sep=""), convert.factors = FALSE)
-
-
-health <- wave %>%
-  select(mergeid,chronicw5,sphus) %>%
-  left_join(wavesr %>%
-              select(mergeid,ph005_)) %>%
+health <-wavesr %>%
+  select(mergeid,starts_with("ph006d")) %>%
   mutate(wave5=i) %>%
   left_join(housing %>%
               select(mergeid,nuts1_2010)) %>%
   left_join(weightsd %>%
               select(mergeid,dw_w5)) %>%
-  left_join(weightslong %>% 
-              select(mergeid,cliw_f)) %>%
-  rename("merg"="mergeid","chr5"="chronicw5", 
-         "sr5"="sphus", "GALI5"="ph005_",
-         "NUTS1"="nuts1_2010", "weight5"="dw_w5", "wlong5"="cliw_f") %>%
-  filter(!is.na(weight5))
+  rename("merg"="mergeid","NUTS1"="nuts1_2010", "weight5"="dw_w5") %>%
+  filter(!is.na(weight5))  %>%
+  mutate(ph006d8=ph006d19+ph006d20) %>%
+  mutate(ph006d8=ifelse(ph006d8==2,1,ph006d8)) %>%
+  mutate(chr5=ph006d1+ph006d2+ph006d3+ph006d4+ph006d5+ph006d6+ph006d8+ph006d10+ph006d12+ph006d16,
+         chr5=ifelse(chr5>0,1,chr5)) %>%
+  select(-starts_with("ph006d"))
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\basic")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 write.table(health, file=paste("wave",i,".csv", sep=""), sep=",")
+
+
 #######################################################################################################################  
 dev.off()
 rm(list=ls())
-library(foreign)
 
 i=6
 setwd(paste("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\SHARE_",i,sep=""))
-wave <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_health.dta", sep=""), convert.factors = FALSE)
 wavesr <- read.dta(file=paste("sharew",i,"_rel7-1-0_ph.dta", sep=""), convert.factors = FALSE)
 weightsd <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_weights.dta", sep=""), convert.factors = FALSE)
 demo <- read.dta(file=paste("sharew",i,"_rel7-1-0_dn.dta", sep=""), convert.factors = FALSE)
 housing <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_housing.dta", sep=""), convert.factors = FALSE)
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\longweights")
-weightslong <-  read.dta(file=paste("w",i,"w",i+1,".dta", sep=""), convert.factors = FALSE)
-
-health <- wave %>%
-  select(mergeid,chronicw6c,sphus) %>%
-  left_join(wavesr %>%
-              select(mergeid,ph005_)) %>%
+health <-wavesr %>%
+  select(mergeid,starts_with("ph006d")) %>%
   mutate(wave6=i) %>%
   left_join(housing %>%
               select(mergeid,nuts1_2015)) %>%
   left_join(weightsd %>%
               select(mergeid,dw_w6)) %>%
-  left_join(weightslong %>% 
-              select(mergeid,cliw_g)) %>%
-  rename("merg"="mergeid","chr6"="chronicw6c", 
-         "sr6"="sphus", "GALI6"="ph005_",
-         "NUTS1"="nuts1_2015", "weight6"="dw_w6", "wlong6"="cliw_g") %>%
-  filter(!is.na(weight6))
+  rename("merg"="mergeid","NUTS1"="nuts1_2015", "weight6"="dw_w6") %>%
+  filter(!is.na(weight6))  %>%
+  mutate(ph006d8=ph006d19+ph006d20) %>%
+  mutate(ph006d8=ifelse(ph006d8==2,1,ph006d8)) %>%
+  mutate(chr6=ph006d1+ph006d2+ph006d3+ph006d4+ph006d5+ph006d6+ph006d8+ph006d10+ph006d12+ph006d16,
+         chr6=ifelse(chr6>0,1,chr6)) %>%
+  select(-starts_with("ph006d"))
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\basic")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 write.table(health, file=paste("wave",i,".csv", sep=""), sep=",")
-
 
 #############################
 dev.off()
 rm(list=ls())
-library(foreign)
 
 i=7
 setwd(paste("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\SHARE_",i,sep=""))
-wave <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_health.dta", sep=""), convert.factors = FALSE)
 wavesr <- read.dta(file=paste("sharew",i,"_rel7-1-0_ph.dta", sep=""), convert.factors = FALSE) 
 weightsd <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_weights.dta", sep=""), convert.factors = FALSE)
 demo <- read.dta(file=paste("sharew",i,"_rel7-1-0_dn.dta", sep=""), convert.factors = FALSE)
 housing <- read.dta(file=paste("sharew",i,"_rel7-1-0_gv_housing.dta", sep=""), convert.factors = FALSE)
 
-health <- wave %>%
-  select(mergeid,chronicw7c,sphus) %>%
-  left_join(wavesr %>%
-              select(mergeid,ph005_)) %>%
-  mutate(wave7=7) %>%
+
+health <-wavesr %>%
+  select(mergeid,starts_with("ph006d")) %>%
+  mutate(wave7=i) %>%
   left_join(housing %>%
               select(mergeid,nuts1_2015)) %>%
   left_join(weightsd %>%
               select(mergeid,dw_w7)) %>%
-  rename("merg"="mergeid","chr7"="chronicw7c", 
-         "sr7"="sphus", "GALI7"="ph005_",
-         "NUTS1"="nuts1_2015", "weight7"="dw_w7") %>%
-  filter(!is.na(weight7))
+  rename("merg"="mergeid","NUTS1"="nuts1_2015", "weight7"="dw_w7") %>%
+  filter(!is.na(weight7)) %>%
+  mutate(ph006d8=ph006d19+ph006d20) %>%
+  mutate(ph006d8=ifelse(ph006d8==2,1,ph006d8)) %>%
+  mutate(chr7=ph006d1+ph006d2+ph006d3+ph006d4+ph006d5+ph006d6+ph006d8+ph006d10+ph006d12+ph006d16,
+         chr7=ifelse(chr7>0,1,chr7)) %>%
+  select(-starts_with("ph006d"))
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\basic")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 write.table(health, file=paste("wave",i,".csv", sep=""), sep=",")
-
 
 ################################################################################
 ####################### merge together
 dev.off()
 rm(list=ls())
 
-library(dplyr)
-
 #coverscreen
 setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\ALL_Coverscreen")
 cover<- read.dta(file="sharewX_rel7-1-0_gv_allwaves_cv_r.dta",convert.factors = FALSE)
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\basic")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 mar<- read.table(file="marmar.csv", sep=",", header=TRUE)
 edu <- read.table(file="maredu.csv", sep=",", header=TRUE)
 
 
 #### merge all
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\basic")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 wave1 <- read.table(file="wave1.csv", sep=",", header=TRUE)
 wave2 <- read.table(file="wave2.csv", sep=",", header=TRUE)
 wave4 <- read.table(file="wave4.csv", sep=",", header=TRUE)
@@ -378,14 +363,24 @@ wave17 <- wave1 %>%
 #started in wave 7 only
 cross7 <- wave17 %>%
   filter(start==7)
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\ready")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 write.table(cross7, file="share17.csv", sep=",")
+
+#started in wave 4 only
+cross4 <- wave17 %>%
+  filter(start==4)
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
+write.table(cross4, file="share14.csv", sep=",")
+
 
 #new longitudinal only
 long17 <- wave17 %>%
   filter(start<7)
 write.table(long17, file="share17long.csv", sep=",")
 
+
+########################################################################################################################
+####### prepare tranistions between waves, including returns
 ##############################################################################################################################
 # wave 1-2 + returns after wave 2
 wave11 <- long17 %>%
@@ -409,18 +404,12 @@ wave11 <- long17 %>%
          agew2=ifelse(nextnm==5,agew5,agew2),
          agew2=ifelse(nextnm==6,agew6,agew2),
          agew2=ifelse(nextnm==7,agew7,agew2),
+         
          chr2=ifelse(nextnm==4,chr4,chr2),
          chr2=ifelse(nextnm==5,chr5,chr2),
          chr2=ifelse(nextnm==6,chr6,chr2),
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr2=ifelse(nextnm==4,sr4,sr2),
-         sr2=ifelse(nextnm==5,sr5,sr2),
-         sr2=ifelse(nextnm==6,sr6,sr2),
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI2=ifelse(nextnm==4,GALI4,GALI2),
-         GALI2=ifelse(nextnm==5,GALI5,GALI2),
-         GALI2=ifelse(nextnm==6,GALI6,GALI2),
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
+         
          weight2=ifelse(nextnm==4,weight4,weight2),
          weight2=ifelse(nextnm==5,weight5,weight2),
          weight2=ifelse(nextnm==6,weight6,weight2),
@@ -453,21 +442,13 @@ wave12 <- long17 %>%
          agew2=ifelse(nextnm==5,agew5,agew2),
          agew2=ifelse(nextnm==6,agew6,agew2),
          agew2=ifelse(nextnm==7,agew7,agew2),
+        
          chr1=chr2,
          chr2=chr4,
          chr2=ifelse(nextnm==5,chr5,chr2),
          chr2=ifelse(nextnm==6,chr6,chr2),
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr1=sr2,
-         sr2=sr4,
-         sr2=ifelse(nextnm==5,sr5,sr2),
-         sr2=ifelse(nextnm==6,sr6,sr2),
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI2,
-         GALI2=GALI4,
-         GALI2=ifelse(nextnm==5,GALI5,GALI2),
-         GALI2=ifelse(nextnm==6,GALI6,GALI2),
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
+        
          weight1=weight2,
          weight2=weight4,
          weight2=ifelse(nextnm==5,weight5,weight2),
@@ -501,14 +482,6 @@ wave14 <- long17 %>%
          chr2=chr5,
          chr2=ifelse(nextnm==6,chr6,chr2),
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr1=sr4,
-         sr2=sr5,
-         sr2=ifelse(nextnm==6,sr6,sr2),
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI4,
-         GALI2=GALI5,
-         GALI2=ifelse(nextnm==6,GALI6,GALI2),
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
          weight1=weight4,
          weight2=weight5,
          weight2=ifelse(nextnm==6,weight6,weight2),
@@ -537,12 +510,6 @@ wave15 <- long17 %>%
          chr1=chr5,
          chr2=chr6,
          chr2=ifelse(nextnm==7,chr7,chr2),
-         sr1=sr5,
-         sr2=sr6,
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI5,
-         GALI2=GALI6,
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
          weight1=weight5,
          weight2=weight6,
          weight2=ifelse(nextnm==7,weight7,weight2),
@@ -566,10 +533,6 @@ wave16 <- long17 %>%
          agew2=agew7,
          chr1=chr6,
          chr2=chr7,
-         sr1=sr6,
-         sr2=sr7,
-         GALI1=GALI6,
-         GALI2=GALI7,
          weight1=weight6,
          weight2=weight7,
          
@@ -606,16 +569,6 @@ wave22 <- long17 %>%
          chr2=ifelse(nextnm==5,chr5,chr2),
          chr2=ifelse(nextnm==6,chr6,chr2),
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr1=sr2,
-         sr2=sr4,
-         sr2=ifelse(nextnm==5,sr5,sr2),
-         sr2=ifelse(nextnm==6,sr6,sr2),
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI2,
-         GALI2=GALI4,
-         GALI2=ifelse(nextnm==5,GALI5,GALI2),
-         GALI2=ifelse(nextnm==6,GALI6,GALI2),
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
          weight1=weight2,
          weight2=weight4,
          weight2=ifelse(nextnm==5,weight5,weight2),
@@ -648,14 +601,6 @@ wave24 <- long17 %>%
          chr2=chr5,
          chr2=ifelse(nextnm==6,chr6,chr2),
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr1=sr4,
-         sr2=sr5,
-         sr2=ifelse(nextnm==6,sr6,sr2),
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI4,
-         GALI2=GALI5,
-         GALI2=ifelse(nextnm==6,GALI6,GALI2),
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
          weight1=weight4,
          weight2=weight5,
          weight2=ifelse(nextnm==6,weight6,weight2),
@@ -683,12 +628,6 @@ wave25 <- long17 %>%
          chr1=chr5,
          chr2=chr6,
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr1=sr5,
-         sr2=sr6,
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI5,
-         GALI2=GALI6,
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
          weight1=weight5,
          weight2=weight6,
          weight2=ifelse(nextnm==7,weight7,weight2),
@@ -712,10 +651,6 @@ wave26 <- long17 %>%
          agew2=agew7,
          chr1=chr6,
          chr2=chr7,
-         sr1=sr6,
-         sr2=sr7,
-         GALI1=GALI6,
-         GALI2=GALI7,
          weight1=weight6,
          weight2=weight7,
          
@@ -749,14 +684,6 @@ wave44 <- long17 %>%
          chr2=chr5,
          chr2=ifelse(nextnm==6,chr6,chr2),
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr1=sr4,
-         sr2=sr5,
-         sr2=ifelse(nextnm==6,sr6,sr2),
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI4,
-         GALI2=GALI5,
-         GALI2=ifelse(nextnm==6,GALI6,GALI2),
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
          weight1=weight4,
          weight2=weight5,
          weight2=ifelse(nextnm==6,weight6,weight2),
@@ -785,12 +712,6 @@ wave45 <- long17 %>%
          chr1=chr5,
          chr2=chr6,
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr1=sr5,
-         sr2=sr6,
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI5,
-         GALI2=GALI6,
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
          weight1=weight5,
          weight2=weight6,
          weight2=ifelse(nextnm==7,weight7,weight2),
@@ -813,10 +734,6 @@ wave46 <- long17 %>%
          agew2=agew7,
          chr1=chr6,
          chr2=chr7,
-         sr1=sr6,
-         sr2=sr7,
-         GALI1=GALI6,
-         GALI2=GALI7,
          weight1=weight6,
          weight2=weight7,
          
@@ -847,12 +764,6 @@ wave55 <- long17 %>%
          chr1=chr5,
          chr2=chr6,
          chr2=ifelse(nextnm==7,chr7,chr2), 
-         sr1=sr5,
-         sr2=sr6,
-         sr2=ifelse(nextnm==7,sr7,sr2),
-         GALI1=GALI5,
-         GALI2=GALI6,
-         GALI2=ifelse(nextnm==7,GALI7,GALI2),
          weight1=weight5,
          weight2=weight6,
          weight2=ifelse(nextnm==7,weight7,weight2),
@@ -876,10 +787,6 @@ wave56 <- long17 %>%
          agew2=agew7,
          chr1=chr6,
          chr2=chr7, 
-         sr1=sr6,
-         sr2=sr7,
-         GALI1=GALI6,
-         GALI2=GALI7,
          weight1=weight6,
          weight2=weight7,
          
@@ -905,10 +812,6 @@ wave6 <- long17 %>%
          agew2=agew7,
          chr1=chr6,
          chr2=chr7,
-         sr1=sr6,
-         sr2=sr7,
-         GALI1=GALI6,
-         GALI2=GALI7,
          weight1=weight6,
          weight2=weight7,
          
@@ -925,18 +828,18 @@ colnames(wave6) <- colnames(wave1)
 
 
 all <- wave1 %>%
-  mutate(wlong=wlong1) %>%
+  mutate(wlong=1) %>%
   bind_rows(wave2 %>%
-              mutate(wlong=wlong2),
+              mutate(wlong=2),
             wave4 %>%
-              mutate(wlong=wlong4),
+              mutate(wlong=4),
             wave5 %>%
-              mutate(wlong=wlong5),
+              mutate(wlong=5),
             wave6 %>%
-              mutate(wlong=wlong6)) %>%
-  select(merg:GALI1,weight1:GALI2,weight2,country,sex,age,agedeath, agew7,edu1,NUTS1,mar1, mar2, start,nextnm,wave,status2,year,agew1,agew2,wlong) %>%
+              mutate(wlong=6)) %>%
+  select(merg,weight1,chr1,chr2,country,sex,age,agedeath, agew7,edu1,NUTS1,mar1, mar2, start,nextnm,wave,status2,year,agew1,agew2,wlong) %>%
   mutate(age=replace(age,(age>594 & age<600),600)) %>%
   filter(age>-1)
 
-setwd("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\ready")
+setwd("C:\\Users\\Magdalena\\demography\\exedagger\\data\\basic")
 write.table(all, file="alllonglong.csv", sep=",", row.names=FALSE)
