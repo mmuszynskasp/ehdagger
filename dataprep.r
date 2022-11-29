@@ -16,6 +16,7 @@ library(purrr)
 library(nnet)
 
 
+
 i=1
 setwd(paste("C:\\Users\\Magdalena\\demography\\attrition\\data\\SHARE\\SHARE_",i,sep=""))
 demo <- read.dta(file=paste("sharew",i,"_rel7-1-0_dn.dta", sep=""), convert.factors = FALSE)
