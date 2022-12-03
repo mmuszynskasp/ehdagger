@@ -35,11 +35,11 @@ mydataa <- mydatao %>%
          sex=recode(sex,"1"="0","2"="1")) %>%
          filter(chr1>-1,  !is.na(weight1), age> -1) %>% ##remove: those for whom we do not know age at wave 1
   mutate(agew1b=age/12) %>% #age at wave 1 in years
-  mutate_all(as.factor) %>%
   mutate(agew1b=floor(as.numeric(as.character(agew1b))), #age back to numeric
          agegr=5*floor(agew1b/5),
          agegr=ifelse(agegr>90,90,agegr),
-         agegr= as.factor(agegr))
+         chr2=ifelse(status2==0,2,chr2)) %>%
+         mutate_all(as.factor) 
 
 
 ######################################################################################################################################################
@@ -53,7 +53,7 @@ country <- unique(mydataa$cname[mydataa$wave==k])#countries the wave is availabl
 mycountry <- country[i]
 
 mydata2 <- mydataa %>%
-  filter(cname==mycountry, wave==k, status2!=-1,chr2!=-1) %>%
+  filter(cname==mycountry, wave==k, status2!=-1, as.numeric(as.character(chr2))>=0) %>%
   mutate(weight1=as.numeric(as.character(weight1))/1000) %>%
   droplevels()
 
@@ -70,7 +70,7 @@ p.fit  <- predict(fitchr, aaa, type='probs')
 outp <- cbind(aaa,p.fit)
 outp$country <- mycountry
 outp$wave <- k
-colnames(outp) <- c("sex", "agegr", "chr","edu","married1", "chr0","chr1","chr2","dead","country", "wave")  
+colnames(outp) <- c("sex", "agegr", "chr","edu","married1", "chr0","chr1","dead","country", "wave")  
 setwd(data.out)
 write.table(outp, file="chrprob.csv", sep=",", row.names=FALSE)
 
@@ -78,7 +78,7 @@ for (i in 2:length(country)){
     mycountry <- country[i]
 
     mydata <- mydataa %>%
-      filter(cname==mycountry, wave==k, status2!=-1,chr2!=-1)%>%
+      filter(cname==mycountry, wave==k, status2!=-1, as.numeric(as.character(chr2))>=0)%>%
       mutate(weight1=as.numeric(as.character(weight1))/1000) %>%
       droplevels()
       
@@ -108,7 +108,7 @@ for (k in waves){
     mycountry <- country[i]
   
     mydata <- mydataa %>%
-      filter(cname==mycountry, wave==k, status2!=-1,chr2!=-1)%>%
+      filter(cname==mycountry, wave==k, status2!=-1,as.numeric(as.character(chr2))>=0)%>%
       mutate(weight1=as.numeric(as.character(weight1))/1000) %>%
       droplevels()
   
@@ -133,16 +133,17 @@ for (k in waves){
 ######### together for Modgen
 outpa <- read.table(file="chrprob.csv", sep=",",header=TRUE) 
 
-###expand tghe grid to all countries at each wave
+###expand the grid to all countries at each wave
 allcountries <- sort(unique(mydataa$cname))
 wave7zero  #add wave 7, only needed to model in modgen
 
-outp2 <- outp %>%
-  expand(wave,sex,agegr,country,chr,edu,married1) %>%
-  left_join(outp)
+outp2 <- outpa %>%
+  complete(wave,sex,agegr, country,chr,edu,married1) 
+
+outp2[is.na(outp2)] <- 0
 
 write.table(outp2, file="chrprob17.csv", sep=",", row.names=FALSE)
-outp3 <- cbind(outp2$chr0, outp2$chr1,outp2$chr2, outp2$dead)
+outp3 <- cbind(outp2$chr0, outp2$chr1,outp2$dead)
 write.table(outp3, file="chrproball.txt", sep=",", row.names=FALSE, eol=",", quote=FALSE)
 
 #####################################################################################################################################
@@ -229,7 +230,7 @@ write.table(outmar2, file="marprob2.txt", sep=",", row.names=FALSE, eol=",")
 ########## starting population
 startpop <- mydataa %>%
   filter(!is.na(weight1), status2==-1, #only those who attrited at the 2nd interview and never returned, 
-         age> -1) %>% ##remove: Ireland, no wave 7; those for whom we do not know age at wave 1
+         as.numeric(age)> -1) %>% ##remove: Ireland, no wave 7; those for whom we do not know age at wave 1
   mutate_all(as.factor) %>%
   mutate(agew1b=floor(as.numeric(as.character(age))/12))#age at wave 1 in years
 
@@ -239,8 +240,8 @@ write.table(startpop, file="startpopall.csv", sep=",", row.names=FALSE)
 ####starting population for simulation
 ###still the order to be checked
 startpopsim <- startpop %>%
-  select(merg,country,sex,chr1,chr1,sr1,edu,married1,wave,year, agew1b) %>%
-  relocate(chr1,chr1,sr1, .after=wave)%>%
+  select(merg,country,sex,chr1,edu,married1,wave,year,agew1b) %>%
+  relocate(chr1,.after=wave)%>%
   relocate(agew1b, .after=married1) %>%
   relocate(year, .after=agew1b) %>%
   mutate(merg2=1:nrow(startpop))
@@ -252,7 +253,7 @@ startpopsim <- startpopsim %>%
   select(-merg) %>%
   relocate(merg2, .before=country)
 
-colnames(startpopsim) <- c("no","country","sex","edu","mar","age","year","wave","chr","chr","sr")
+colnames(startpopsim) <- c("no","country","sex","edu","mar","age","year","wave","chr")
 
 write.table(startpopsim, file="startposim.csv", sep=",", row.names=FALSE)
 write.table(ids, file="mergids.csv", sep=",", row.names=FALSE)
