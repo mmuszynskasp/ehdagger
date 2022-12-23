@@ -838,7 +838,7 @@ all <- wave1 %>%
               mutate(wlong=5),
             wave6 %>%
               mutate(wlong=6)) %>%
-  select(merg,weight1,chr1,chr2,country,sex,age,agedeath, agew7,edu1,NUTS1,mar1, mar2, start,nextnm,wave,status2,year,agew1,agew2,wlong) %>%
+  select(merg,weight1,weight2, chr1,chr2,country,sex,age,agedeath, agew7,edu1,NUTS1,mar1, mar2, start,nextnm,wave,status2,year,agew1,agew2,wlong) %>%
   mutate(age=replace(age,(age>594 & age<600),600)) %>%
   filter(age>-1)
 
